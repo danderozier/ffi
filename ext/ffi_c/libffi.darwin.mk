@@ -23,6 +23,10 @@ ifneq ($(findstring -arch x86_64,$(ARCHFLAGS)),)
   ARCHES += x86_64
 endif
 
+ifneq ($(findstring -arch arm64,$(ARCHFLAGS)),)
+  ARCHES += arm64
+endif
+
 ifeq ($(strip $(ARCHES)),)
 LIBFFI_BUILD_DIR = $(BUILD_DIR)/libffi-$(arch)
 # Just build the one (default) architecture
@@ -75,9 +79,13 @@ ifneq ($(findstring x86_64,$(ARCHES)),)
   $(call target_ffi,x86_64)
 endif
 
+ifneq ($(findstring arm64,$(ARCHES)),)
+  $(call target_ffi,arm64)
+endif
+
 
 $(LIBFFI):	$(LIBTARGETS)
-	# Assemble into a FAT (x86_64, i386, ppc) library
+	# Assemble into a FAT (x86_64, i386, ppc, arm64) library
 	@mkdir -p "$(@D)"
 	/usr/bin/libtool -static -o $@ \
 	    $(foreach arch, $(ARCHES),"$(BUILD_DIR)"/libffi-$(arch)/.libs/libffi_convenience.a)
@@ -88,6 +96,8 @@ $(LIBFFI):	$(LIBTARGETS)
 		printf "#include \"libffi-i386/include/ffi.h\"\n"; \
 		printf "#elif defined(__x86_64__)\n"; \
 		printf "#include \"libffi-x86_64/include/ffi.h\"\n";\
+		printf "#elif defined(__arm64__)\n"; \
+		printf "#include \"libffi-arm64/include/ffi.h\"\n";\
 		printf "#elif defined(__ppc__)\n"; \
 		printf "#include \"libffi-ppc/include/ffi.h\"\n";\
 		printf "#endif\n";\
@@ -97,6 +107,8 @@ $(LIBFFI):	$(LIBTARGETS)
 		printf "#include \"libffi-i386/include/ffitarget.h\"\n"; \
 		printf "#elif defined(__x86_64__)\n"; \
 		printf "#include \"libffi-x86_64/include/ffitarget.h\"\n";\
+		printf "#elif defined(__arm64__)\n"; \
+		printf "#include \"libffi-arm64/include/ffitarget.h\"\n";\
 		printf "#elif defined(__ppc__)\n"; \
 		printf "#include \"libffi-ppc/include/ffitarget.h\"\n";\
 		printf "#endif\n";\
